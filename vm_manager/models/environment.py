@@ -1,8 +1,8 @@
 import os
 
-from devops.drivers.libvirt.libvirt_driver import LibvirtManager as Manager
-from devops.settings import IMAGES_PATH
-from devops.templates import qcow2_templates as config
+from vm_manager.drivers.libvirt.libvirt_driver import LibvirtManager as Manager
+from vm_manager.settings import IMAGES_PATH
+from vm_manager.templates import qcow2_templates as config
 
 
 class Environment(object):

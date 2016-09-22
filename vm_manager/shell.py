@@ -2,7 +2,7 @@
 import sys
 import argparse
 
-from devops.models.environment import Environment
+from vm_manager.models.environment import Environment
 
 
 class Shell(Environment):
