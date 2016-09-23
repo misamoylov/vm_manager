@@ -4,20 +4,31 @@ from xml.dom import minidom
 import sys
 import shutil
 import subprocess
-import xmltodict
 
 
-from vm_manager.drivers.libvirt.libvirt_driver import LibvirtManager as Manager
 from vm_manager.settings import IMAGES_PATH
-from vm_manager.templates import qcow2_templates as config
-
+from vm_manager.drivers.libvirt.libvirt_xml import LibvirtXmlManager as XMLManager
 
 class Environment(object):
     def __init__(self):
         self.conn = libvirt.open('qemu:///system')
+        self.xml_manager = XMLManager()
+
+    def vm_conn(self, vm_id):
+        return self.conn.lookupByID(vm_id)
 
     def get_images_list(self):
         return os.listdir(IMAGES_PATH)
+
+    def create_vm_config(self):
+        pass
+
+    def get_vms_info(self):
+        """Get information about all vms on local machine
+
+        :return: dict: {"vm_name": str, "vm_ip": str, "vm_id": int, "vm_status": str)
+        """
+        vm_ids = self.get_vm_ids()
 
     def get_vm_ids(self):
         """
@@ -34,14 +45,16 @@ class Environment(object):
         """
         vm = self.conn.lookupByID(vm_id)
         raw_xml = vm.XMLDesc(0)
-        xml = minidom.parseString(raw_xml)
-        interfaceTypes = xml.getElementsByTagName('interface')
-        for interfaceType in interfaceTypes:
-            interfaceNodes = interfaceType.childNodes
-            for interfaceNode in interfaceNodes:
-                if interfaceNode.nodeName == 'mac':
-                    for attr in interfaceNode.attributes.keys():
-                        return interfaceNode.attributes[attr].value
+        return self.xml_manager.get_mac(raw_xml)
+
+        # xml = minidom.parseString(raw_xml)
+        # interfaceTypes = xml.getElementsByTagName('interface')
+        # for interfaceType in interfaceTypes:
+        #     interfaceNodes = interfaceType.childNodes
+        #     for interfaceNode in interfaceNodes:
+        #         if interfaceNode.nodeName == 'mac':
+        #             for attr in interfaceNode.attributes.keys():
+        #                 return interfaceNode.attributes[attr].value
 
     # def get_vms(self):
     #     return self.conn.
@@ -53,8 +66,7 @@ class Environment(object):
     def prepare_vm(self, vm_ip):
         pass
 
-
-    def get_ip_by_mac(self,mac):
+    def get_ip_by_mac(self, mac):
         process = subprocess.Popen(['arp', '-a'], stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
         process.wait()
@@ -62,13 +74,26 @@ class Environment(object):
             if mac in line:
                 return line.split()[1].strip('()')
 
-    def run_vm(self):
+    def run_vm(self, vm_id):
         pass
 
-    def delete_vm(self):
+    def delete_vm(self, vm_id):
         pass
 
-    def suspend_vm(self):
-        pass
+    def suspend_vm(self, vm_id):
+        """Suspend VM
+
+        :param vm_id: virtual machine id
+        :return: None
+        """
+        self.vm_conn(vm_id).suspend()
+
+    def resume_vm(self, vm_id):
+        """Resume virtual machine
+
+        :param vm_id: virtual machine id
+        :return:
+        """
+        self.vm_conn(vm_id).resume()
 
 

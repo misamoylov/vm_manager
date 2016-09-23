@@ -5,6 +5,7 @@ import argparse
 from vm_manager.models.environment import Environment
 
 a = Environment()
+print(a.get_vm_mac(46))
 print(a.get_images_list())
 
 # class Shell(Environment):
