@@ -6,3 +6,4 @@ _boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
 
 # Path to VM images
 IMAGES_PATH = os.environ.get("IMAGES_PATH")
+IMAGES_WORKING_DIRECTORY = os.environ.get("IMAGES_WORKING_DIRECTORY")

@@ -7,6 +7,7 @@ from vm_manager.models.environment import Environment
 a = Environment()
 print(a.get_vm_mac(46))
 print(a.get_images_list())
+a.create_domain('default.qcow2', 3)
 
 # class Shell(Environment):
 #     def __init__(self, args):

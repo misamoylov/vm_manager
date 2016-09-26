@@ -7,6 +7,8 @@ import subprocess
 
 
 from vm_manager.settings import IMAGES_PATH
+from vm_manager.settings import IMAGES_WORKING_DIRECTORY
+
 from vm_manager.drivers.libvirt.libvirt_xml import LibvirtXmlManager as XMLManager
 
 class Environment(object):
@@ -47,17 +49,33 @@ class Environment(object):
         raw_xml = vm.XMLDesc(0)
         return self.xml_manager.get_mac(raw_xml)
 
-        # xml = minidom.parseString(raw_xml)
-        # interfaceTypes = xml.getElementsByTagName('interface')
-        # for interfaceType in interfaceTypes:
-        #     interfaceNodes = interfaceType.childNodes
-        #     for interfaceNode in interfaceNodes:
-        #         if interfaceNode.nodeName == 'mac':
-        #             for attr in interfaceNode.attributes.keys():
-        #                 return interfaceNode.attributes[attr].value
+    def create_vm_configs_from_image(self, image, vm_count):
+        """
 
-    # def get_vms(self):
-    #     return self.conn.
+        :param image: str, path to source image
+        :param vm_count: int, count of vm that will be created
+        :return:
+        """
+        try:
+            with open(IMAGES_PATH + image) as f:
+                pass
+        except IOError as e:
+            print("Error: Image file {} not found.".format(IMAGES_PATH + image))
+
+        configs = []
+        for node in (range(1, vm_count+1)):
+            name = "node-{}".format(node)
+            new_image = "{}{}_{}".format(IMAGES_WORKING_DIRECTORY, name, image)
+            shutil.copy(IMAGES_PATH + image, new_image)
+            config = self.xml_manager.build_domain_xml(vm_name="{}_{}".format(name, image),
+                                                       source_image=new_image)
+            configs.append(config)
+        return configs
+
+    def create_domain(self, image, vm_count):
+        configs = self.create_vm_configs_from_image(image, vm_count)
+        for config in configs:
+            self.conn.createXML(config)
 
 
     # def vm_config(self, name='default', memory='1', vcpu='1', image_name='ubuntu-12.04.qcow2'):

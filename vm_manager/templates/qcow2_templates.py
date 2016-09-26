@@ -134,7 +134,7 @@ template2 = """<domain type='kvm'>
 """
 
 template = """<domain type='kvm'>
-  <name>standalone</name>
+  <name>default</name>
   <memory unit='GB'>1</memory>
   <vcpu>1</vcpu>
   <os>
