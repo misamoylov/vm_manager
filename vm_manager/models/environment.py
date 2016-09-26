@@ -73,8 +73,8 @@ class Environment(object):
             configs.append(config)
         return configs
 
-    def create_domain(self, image, vm_count):
-        configs = self.create_vm_configs_from_image(image, vm_count, cluster_name=None)
+    def create_domain(self, image, vm_count, cluster_name='env_name'):
+        configs = self.create_vm_configs_from_image(image, vm_count, cluster_name)
         for config in configs:
             self.conn.createXML(config)
 
