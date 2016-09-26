@@ -65,7 +65,7 @@ class Environment(object):
         configs = []
         for node in (range(1, vm_count+1)):
             name = "node-{}".format(node)
-            new_image = "{}{}_{}".format(IMAGES_WORKING_DIRECTORY, name, image)
+            new_image = "{}{}_{}_{}".format(IMAGES_WORKING_DIRECTORY, cluster_name, name, image)
             shutil.copy(IMAGES_PATH + image, new_image)
             config = self.xml_manager.build_domain_xml(vm_name="{}_{}_{}".format(cluster_name,
                                                                                  name, image),
