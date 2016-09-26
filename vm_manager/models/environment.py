@@ -49,7 +49,7 @@ class Environment(object):
         raw_xml = vm.XMLDesc(0)
         return self.xml_manager.get_mac(raw_xml)
 
-    def create_vm_configs_from_image(self, image, vm_count):
+    def create_vm_configs_from_image(self, image, vm_count, cluster_name='env_name'):
         """
 
         :param image: str, path to source image
@@ -67,19 +67,16 @@ class Environment(object):
             name = "node-{}".format(node)
             new_image = "{}{}_{}".format(IMAGES_WORKING_DIRECTORY, name, image)
             shutil.copy(IMAGES_PATH + image, new_image)
-            config = self.xml_manager.build_domain_xml(vm_name="{}_{}".format(name, image),
+            config = self.xml_manager.build_domain_xml(vm_name="{}_{}_{}".format(cluster_name,
+                                                                                 name, image),
                                                        source_image=new_image)
             configs.append(config)
         return configs
 
     def create_domain(self, image, vm_count):
-        configs = self.create_vm_configs_from_image(image, vm_count)
+        configs = self.create_vm_configs_from_image(image, vm_count, cluster_name=None)
         for config in configs:
             self.conn.createXML(config)
-
-
-    # def vm_config(self, name='default', memory='1', vcpu='1', image_name='ubuntu-12.04.qcow2'):
-    #     return config.template2.format(name, memory, vcpu, image_name)
 
     def prepare_vm(self, vm_ip):
         pass
