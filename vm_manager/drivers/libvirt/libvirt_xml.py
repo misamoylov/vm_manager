@@ -11,32 +11,14 @@ class LibvirtXmlManager(object):
         self.root = ET.fromstring(self.template)
 
     def get_mac(self, dom_xml):
-        return self.root.find(".//mac").attrib['address']
-        # xml = minidom.parseString(dom_xml)
-        # interfaceTypes = xml.getElementsByTagName('interface')
-        # for interfaceType in interfaceTypes:
-        #     interfaceNodes = interfaceType.childNodes
-        #     for interfaceNode in interfaceNodes:
-        #         if interfaceNode.nodeName == 'mac':
-        #             for attr in interfaceNode.attributes.keys():
-        #                 return interfaceNode.attributes[attr].value
-    def set_mac(self):
-        old_mac = self.root.find(".//mac").attrib['address']
-
-
-    def set_vm_name(self):
-        pass
-
-    def get_vm_name(self):
-        return self.root.find('name').text
-
-
-    def set_vm_memory(self):
-        pass
-
-    def set_vm_vcpu_count(self):
-        pass
-
+        xml = minidom.parseString(dom_xml)
+        interfaceTypes = xml.getElementsByTagName('interface')
+        for interfaceType in interfaceTypes:
+            interfaceNodes = interfaceType.childNodes
+            for interfaceNode in interfaceNodes:
+                if interfaceNode.nodeName == 'mac':
+                    for attr in interfaceNode.attributes.keys():
+                        return interfaceNode.attributes[attr].value
 
     def build_domain_xml(self, vm_name='default', source_image='default.qcow2', vcpu_count="1",
                          memory="1"):

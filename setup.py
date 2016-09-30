@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='vm_manager',
-    version='0.1',
+    version='0.2',
     packages=find_packages(),
     url='https://github.com/misamoylov/vm_manager',
     license='GPL',
