@@ -30,7 +30,8 @@ class Environment(object):
     def get_vms_info(self):
         """Get information about all vms on local machine
 
-        :return: dict: {"vm_name": str, "vm_ip": str, "vm_id": int, "vm_status": str)
+        :return: list: list of dicts [
+        {"vm_name": str, "vm_ip": str, "vm_id": int, "vm_status": str)]
         """
         vm_ids = self.get_vm_ids()
 
@@ -94,6 +95,14 @@ class Environment(object):
         for line in process.stdout:
             if mac in line:
                 return line.split()[1].strip('()')
+
+    def get_vm_ip(self, vm_id):
+        """Get vm ip
+
+        :param vm_id: virtual machine id
+        :return: str: virtual machine ip
+        """
+        return self.get_ip_by_mac(self.get_vm_mac(vm_id))
 
     def run_vm(self, vm_id):
         pass
