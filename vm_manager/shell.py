@@ -13,19 +13,23 @@ from helpers.utils import install_rpm
 from vm_manager.models.environment import Environment
 
 env = Environment()
-ssh = SSHManager()
-for vm in env.get_vm_ids():
-    print(env.get_vm_ip(vm))
-    print(get_os_type(env.get_vm_ip(vm))['NAME'])
-    if "Ubuntu" in get_os_type(env.get_vm_ip(vm))['NAME']:
-        add_ubuntu_repos(env.get_vm_ip(vm))
-        print(install_deb(env.get_vm_ip(vm))['stdout'])
-    elif "CentOS" in get_os_type(env.get_vm_ip(vm))['NAME']:
-        print(add_centos_repos(env.get_vm_ip(vm))['stdout'])
-        print(install_rpm(env.get_vm_ip(vm))['stdout'])
-    elif "Debian" in get_os_type(env.get_vm_ip(vm))['NAME']:
-        print(add_debian_repos(env.get_vm_ip(vm))['stdout'])
-        print(install_deb(env.get_vm_ip(vm)))
+confs = []
+for image in env.get_images_list():
+    confs.append(env.get_vm_name_from_config(env.create_vm(image=image)))
+print(confs)
+# ssh = SSHManager()
+# for vm in env.get_vm_ids():
+#     print(env.get_vm_ip(vm))
+#     print(get_os_type(env.get_vm_ip(vm))['NAME'])
+#     if "Ubuntu" in get_os_type(env.get_vm_ip(vm))['NAME']:
+#         add_ubuntu_repos(env.get_vm_ip(vm))
+#         print(install_deb(env.get_vm_ip(vm))['stdout'])
+#     elif "CentOS" in get_os_type(env.get_vm_ip(vm))['NAME']:
+#         print(add_centos_repos(env.get_vm_ip(vm))['stdout'])
+#         print(install_rpm(env.get_vm_ip(vm))['stdout'])
+#     elif "Debian" in get_os_type(env.get_vm_ip(vm))['NAME']:
+#         print(add_debian_repos(env.get_vm_ip(vm))['stdout'])
+#         print(install_deb(env.get_vm_ip(vm)))
 
 
 

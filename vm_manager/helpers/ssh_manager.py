@@ -45,3 +45,19 @@ class SSHManager(object):
         }
         return result
 
+    def upload_on_remote(self, ip, user, password):
+        """
+
+        :return:
+        """
+        transport = paramiko.Transport((ip, 22))
+        transport.connect(username=user,
+                          password=password)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+
+        remotepath = '/tmp/client.py'
+        localpath = '/home/msamoylov/statistics_sender/client.py'
+
+        sftp.put(localpath, remotepath)
+
+

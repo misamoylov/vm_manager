@@ -37,6 +37,11 @@ class LibvirtXmlManager(object):
         #Set vcpu
         root.find('.//vcpu').text = vcpu_count
 
-
         return ET.tostring(root)
+
+    def get_vm_name(self, dom_xml):
+        xml = ET.fromstring(dom_xml)
+        return xml.find('.//name').text
+
+
 

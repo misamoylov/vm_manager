@@ -2,7 +2,7 @@ import libvirt
 import os
 import shutil
 import subprocess
-
+from xml.dom import minidom
 
 from vm_manager.settings import IMAGES_PATH
 from vm_manager.settings import IMAGES_WORKING_DIRECTORY
@@ -14,26 +14,19 @@ class Environment(object):
     def __init__(self):
         self.conn = libvirt.open('qemu:///system')
         self.xml_manager = XMLManager()
+        self.snapshot = None
 
     def get_image_name(self, full_image_name):
         return full_image_name.rstrip('.qcow2')
 
-    def vm_conn(self, vm_id):
-        return self.conn.lookupByID(vm_id)
+    def vm_conn(self, vm_id=None, vm_name=None):
+        if vm_id is not  None:
+            return self.conn.lookupByID(vm_id)
+        elif vm_name is not None:
+            return self.conn.lookupByName(vm_name)
 
     def get_images_list(self):
         return os.listdir(IMAGES_PATH)
-
-    def create_vm_config(self):
-        pass
-
-    def get_vms_info(self):
-        """Get information about all vms on local machine
-
-        :return: list: list of dicts [
-        {"vm_name": str, "vm_ip": str, "vm_id": int, "vm_status": str)]
-        """
-        vm_ids = self.get_vm_ids()
 
     def get_vm_ids(self):
         """
@@ -54,6 +47,28 @@ class Environment(object):
         vm = self.conn.lookupByID(vm_id)
         raw_xml = vm.XMLDesc(0)
         return self.xml_manager.get_mac(raw_xml)
+
+    def create_vm_config_standalone_vm(self, image):
+        """
+
+                :param image: str, path to source image
+                :param vm_count: int, count of vm that will be created
+                :return:
+                """
+        try:
+            with open(IMAGES_PATH + image) as f:
+                pass
+        except IOError as e:
+            print("Error: Image file {} not found.".format(IMAGES_PATH + image))
+
+        new_image = "{}_{}".format(IMAGES_WORKING_DIRECTORY, image)
+        shutil.copy(IMAGES_PATH + image, new_image)
+        config = self.xml_manager.build_domain_xml(vm_name="{}".format(image),
+                                                   source_image=new_image)
+        return config
+
+    def get_vm_name_from_config(self, vm_config):
+        return self.xml_manager.get_vm_name(vm_config)
 
     def create_vm_configs_from_image(self, image, vm_count, cluster_name='env_name'):
         """
@@ -79,11 +94,17 @@ class Environment(object):
             configs.append(config)
         return configs
 
-    def create_domain(self, image, vm_count, cluster_name='env_name'):
+    def create_cluster(self, image, vm_count, cluster_name='env_name'):
         configs = self.create_vm_configs_from_image(image, vm_count, cluster_name)
         for config in configs:
             self.conn.createXML(config)
+        return configs
 
+    def create_vm(self, image):
+
+        config = self.create_vm_config_standalone_vm(image)
+        self.conn.createXML(config)
+        return config
 
     def prepare_vm(self, vm_ip):
         pass
@@ -181,3 +202,61 @@ class Environment(object):
         """
         if self.vm_status(vm_id):
             self.vm_conn(vm_id).destroy()
+
+    def snapshots_vm(self, vm_id):
+        """List of snapshots for vm
+
+        :param vm_id: vm id
+        :return: list of snapshots
+        """
+        vm = self.conn.lookupByID(vm_id)
+        return vm.snapshotListNames()
+
+    def create_xml_for_snapshot(self, name=None):
+        def create_element(doc, tag, text):
+            el = doc.createElement(tag)
+            txt = doc.createTextNode(text)
+            el.appendChild(txt)
+            return el
+
+        doc = minidom.Document()
+        root = doc.createElement('domainsnapshot')
+        doc.appendChild(root)
+        if name is not None:
+            root.appendChild(create_element(doc, 'name', name))
+        description = 'Snapshot for VM'
+        root.appendChild(create_element(doc, 'description', description))
+        return doc.toxml()
+
+    def snapshots(self, vm_id):
+        return self.vm_conn(vm_id).snapshotListNames()
+
+    def create_snapshot(self, vm_id, name=None):
+        """
+        Creates a snapshot for vm.
+        """
+        xml = self.create_xml_for_snapshot(name)
+        self.snapshot = self.vm_conn(vm_id).snapshotCreateXML(xml)
+        return self.snapshot
+
+    def revert_snapshot(self, vm_id):
+        """
+        Revert to previous snapshot.
+        """
+        if self.snapshot is not None:
+            self.vm_conn(vm_id).revertToSnapshot(self.snapshot)
+
+    def delete_snapshot(self, vm_id):
+        """
+        Delete the current snapshot.
+        """
+        if self.snapshot is not None:
+            self.snapshot.delete()
+            self.snapshot = None
+
+    def restore_snapshot(self):
+        """
+        Revert to previous snapshot and delete the snapshot point.
+        """
+        self.revert_snapshot()
+        self.delete_snapshot()
