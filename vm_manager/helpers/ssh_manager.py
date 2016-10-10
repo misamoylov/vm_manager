@@ -45,7 +45,7 @@ class SSHManager(object):
         }
         return result
 
-    def upload_on_remote(self, ip, user, password):
+    def upload_to_remote(self, ip, user, password):
         """
 
         :return:
