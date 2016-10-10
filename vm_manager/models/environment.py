@@ -35,16 +35,16 @@ class Environment(object):
         """
         return [i.ID() for i in self.conn.listAllDomains()]
 
-    def get_vm_config(self, vm_id):
-        pass
-
-    def get_vm_mac(self, vm_id):
+    def get_vm_mac(self, vm_id=None, vm_name=None):
         """Connect to vm and return their mac address
 
         :param vm_id: integer, virtual machine ID
         :return:
         """
-        vm = self.conn.lookupByID(vm_id)
+        if vm_id is not None:
+            vm = self.conn.lookupByID(vm_id)
+        elif vm_name is not None:
+            vm = self.conn.lookupByName(vm_name)
         raw_xml = vm.XMLDesc(0)
         return self.xml_manager.get_mac(raw_xml)
 
@@ -69,6 +69,9 @@ class Environment(object):
 
     def get_vm_name_from_config(self, vm_config):
         return self.xml_manager.get_vm_name(vm_config)
+
+    def get_vm_name(self, vm_id):
+        return self.vm_conn(vm_id=vm_id).name()
 
     def create_vm_configs_from_image(self, image, vm_count, cluster_name='env_name'):
         """
@@ -106,9 +109,6 @@ class Environment(object):
         self.conn.createXML(config)
         return config
 
-    def prepare_vm(self, vm_ip):
-        pass
-
     def get_ip_by_mac(self, mac):
         process = subprocess.Popen(['arp', '-a'], stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -117,19 +117,16 @@ class Environment(object):
             if mac in line:
                 return line.split()[1].strip('()')
 
-    def get_vm_ip(self, vm_id):
+    def get_vm_ip(self, vm_id=None, vm_name=None):
         """Get vm ip
 
         :param vm_id: virtual machine id
         :return: str: virtual machine ip
         """
-        return self.get_ip_by_mac(self.get_vm_mac(vm_id))
-
-    def run_vm(self, vm_id):
-        pass
-
-    def delete_vm(self, vm_id):
-        pass
+        if vm_id is not None:
+            return self.get_ip_by_mac(self.get_vm_mac(vm_id))
+        elif vm_name is not None:
+            return self.get_ip_by_mac(self.get_vm_mac(vm_name=vm_name))
 
     def suspend_vm(self, vm_id):
         """Suspend VM
@@ -161,19 +158,25 @@ class Environment(object):
         """
         return bool(self.vm_conn(vm_id).isActive())
 
-    def suspend(self, vm_id):
+    def suspend(self, vm_id=None, vm_name=None):
         """
         Suspend VM.
         """
-        if self.vm_status(vm_id):
-            self.vm_conn(vm_id).suspend()
+        if vm_id is not None:
+            self.conn.lookupByID(vm_id).suspend()
+        elif vm_name is not None:
+            self.conn.lookupByName(vm_name).suspend()
+        # if self.vm_status(vm_id):
+        #     self.vm_conn(vm_id).suspend()
 
-    def resume(self, vm_id):
+    def resume(self, vm_id=None, vm_name=None):
         """
         Resume VM.
         """
-        if self.is_active:
+        if vm_id is not None:
             self.vm_conn(vm_id).resume()
+        elif vm_name is not None:
+            self.vm_conn(vm_name=vm_name).resume()
 
     def reboot(self, vm_id):
         """
@@ -260,3 +263,24 @@ class Environment(object):
         """
         self.revert_snapshot()
         self.delete_snapshot()
+
+    def revert_snapshot_name(self, vm_id=None, vm_name=None, snapshot_name=None):
+        """
+
+        :return:
+        """
+        if vm_id is not  None:
+            vm = self.conn.lookupByID(vm_id)
+        elif vm_name is not None:
+            vm = self.conn.lookupByName(vm_name)
+        try:
+            vm_snapshot = vm.snapshotLookupByName(snapshot_name)
+            vm.revertToSnapshot(vm_snapshot, 0)
+        except Exception as e:
+            print("Snapshot with name: {} not found".format(snapshot_name), e)
+            print("Available snapshots for vm: {}".format(vm.snapshotListNames()))
+
+
+
+
+

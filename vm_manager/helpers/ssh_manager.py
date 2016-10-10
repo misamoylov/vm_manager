@@ -45,7 +45,7 @@ class SSHManager(object):
         }
         return result
 
-    def upload_to_remote(self, ip, user, password):
+    def upload_to_remote(self, ip, user, password, localpath, remotepath):
         """
 
         :return:
@@ -54,9 +54,6 @@ class SSHManager(object):
         transport.connect(username=user,
                           password=password)
         sftp = paramiko.SFTPClient.from_transport(transport)
-
-        remotepath = '/tmp/client.py'
-        localpath = '/home/msamoylov/statistics_sender/client.py'
 
         sftp.put(localpath, remotepath)
 
