@@ -35,6 +35,13 @@ class Environment(object):
         """
         return [i.ID() for i in self.conn.listAllDomains()]
 
+    def get_vm_names(self):
+        """
+
+        :return: list of virtual machines names
+        """
+        return [i.name() for i in self.conn.listAllDomains()]
+
     def get_vm_mac(self, vm_id=None, vm_name=None):
         """Connect to vm and return their mac address
 
@@ -61,7 +68,7 @@ class Environment(object):
         except IOError as e:
             print("Error: Image file {} not found.".format(IMAGES_PATH + image))
 
-        new_image = "{}_{}".format(IMAGES_WORKING_DIRECTORY, image)
+        new_image = "{}{}".format(IMAGES_WORKING_DIRECTORY, image)
         shutil.copy(IMAGES_PATH + image, new_image)
         config = self.xml_manager.build_domain_xml(vm_name="{}".format(image),
                                                    source_image=new_image)

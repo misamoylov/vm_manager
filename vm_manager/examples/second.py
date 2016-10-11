@@ -1,5 +1,3 @@
-
-
 import os
 
 from vm_manager.models.environment import Environment
@@ -12,11 +10,12 @@ IMAGES_WORKING_PATH - directory with images for working virtual machines
 """
 
 env = Environment()
+vm_names = []
 ssh = SSHManager()
 # Step 1. Prepare vms
 for image in env.get_images_list():
-    print(image)
     vm_name = env.get_vm_name_from_config(env.create_vm(image=image))
+    vm_names.append(vm_name)
     writepath = '/home/msamoylov/vm_manager/vms'
     mode = 'a+' if os.path.exists(writepath) else 'r+'
     with open(writepath, mode) as f:

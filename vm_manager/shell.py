@@ -13,8 +13,8 @@ from helpers.utils import install_rpm
 from vm_manager.models.environment import Environment
 #
 env = Environment()
-# vm_names = []
-# ssh = SSHManager()
+vm_names = []
+ssh = SSHManager()
 # # Step 1. Prepare vms
 # for image in env.get_images_list():
 #     vm_name = env.get_vm_name_from_config(env.create_vm(image=image))
@@ -31,7 +31,7 @@ env = Environment()
 #             if len(env.snapshots_vm(vm)) == 0 or 'ready' not in env.snapshots_vm(vm):
 #                 env.create_snapshot(vm, 'ready')
 #                 env.suspend(vm)
-# # Step 3. Resume VM, revert snapshot, upload and run script, suspend vm
+# Step 3. Resume VM, revert snapshot, upload and run script, suspend vm
 
 with open('/home/msamoylov/vm_manager/vms') as f:
     for vm in f.readlines():
