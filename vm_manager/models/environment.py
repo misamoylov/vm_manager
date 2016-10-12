@@ -11,10 +11,19 @@ from vm_manager.drivers.libvirt.libvirt_xml import LibvirtXmlManager as XMLManag
 
 
 class Environment(object):
-    def __init__(self):
+    def __init__(self, images_path=None, images_working_directory=None):
         self.conn = libvirt.open('qemu:///system')
         self.xml_manager = XMLManager()
         self.snapshot = None
+        if images_path is None:
+            self.images_path = IMAGES_PATH
+        else:
+            self.images_path = images_path
+        if images_working_directory is None:
+            self.images_working_directory = IMAGES_WORKING_DIRECTORY
+        else:
+            self.images_working_directory = images_working_directory
+
 
     def get_image_name(self, full_image_name):
         return full_image_name.rstrip('.qcow2')
@@ -26,7 +35,7 @@ class Environment(object):
             return self.conn.lookupByName(vm_name)
 
     def get_images_list(self):
-        return os.listdir(IMAGES_PATH)
+        return os.listdir(self.images_path)
 
     def get_vm_ids(self):
         """
@@ -63,13 +72,13 @@ class Environment(object):
                 :return:
                 """
         try:
-            with open(IMAGES_PATH + image) as f:
+            with open(self.images_path + image) as f:
                 pass
         except IOError as e:
-            print("Error: Image file {} not found.".format(IMAGES_PATH + image))
+            print("Error: Image file {} not found.".format(self.images_path + image))
 
-        new_image = "{}{}".format(IMAGES_WORKING_DIRECTORY, image)
-        shutil.copy(IMAGES_PATH + image, new_image)
+        new_image = "{}{}".format(self.images_working_directory, image)
+        shutil.copy(self.images_path + image, new_image)
         config = self.xml_manager.build_domain_xml(vm_name="{}".format(image),
                                                    source_image=new_image)
         return config
@@ -88,16 +97,17 @@ class Environment(object):
         :return:
         """
         try:
-            with open(IMAGES_PATH + image) as f:
+            with open(self.images_path + image) as f:
                 pass
         except IOError as e:
-            print("Error: Image file {} not found.".format(IMAGES_PATH + image))
+            print("Error: Image file {} not found.".format(self.images_path + image))
 
         configs = []
         for node in (range(1, vm_count+1)):
             name = "node-{}".format(node)
-            new_image = "{}{}_{}_{}".format(IMAGES_WORKING_DIRECTORY, cluster_name, name, image)
-            shutil.copy(IMAGES_PATH + image, new_image)
+            new_image = "{}{}_{}_{}".format(self.images_working_directory, cluster_name, name,
+                                            image)
+            shutil.copy(self.images_path + image, new_image)
             config = self.xml_manager.build_domain_xml(vm_name="{}_{}_{}".format(cluster_name,
                                                                                  name, image),
                                                        source_image=new_image)
