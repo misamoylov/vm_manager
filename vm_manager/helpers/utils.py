@@ -1,11 +1,9 @@
 # coding=utf-8
 import random
 
-from vm_manager.helpers.ssh_manager import SSHManager
-
 
 def mac_address_generator():
-    """Generate random mac address
+    """Generate a random mac address
 
     :return: string: mac address
     """
@@ -16,69 +14,12 @@ def mac_address_generator():
     return ':'.join(map(lambda x: "%02x" % x, mac))
 
 
-def get_os_type(ip):
-    ssh = SSHManager()
-    return dict(
-        v.split("=") for v in ssh.exec_cmd(
-            ip, 'cat /etc/*-release')['stdout'].replace(
-            '\t', ' ').strip().split('\n') if v.strip() and "=" in v)
+def uuid_generator():
+    """Generate a random UUID"""
+    uuid = [random.randint(0, 255) for r in range(0, 16)]
+    return uuid_to_string(uuid)
 
 
-def add_ubuntu_repos(ip):
-    ssh = SSHManager()
-    cmd = "sh -c \'echo \"deb http://repo.postgrespro.ru/pgproee-9.6-beta/ubuntu/" \
-          " $(lsb_release -cs) main\" " \
-          "> /etc/apt/sources.list.d/postgrespro.list\'"
-    ssh.exec_cmd(ip, cmd)
-    cmd = "wget --quiet -O" \
-          " - http://repo.postgrespro.ru/pgproee-9.6-beta/keys/GPG-KEY-POSTGRESPRO-95" \
-          " |  apt-key add -"
-    ssh.exec_cmd(ip, cmd)
-    cmd = "apt-get update"
-    return ssh.exec_cmd(ip, cmd)
-
-
-def add_debian_repos(ip):
-    ssh = SSHManager()
-    cmd = "sh -c \'echo \"deb http://repo.postgrespro.ru/pgproee-9.6-beta/debian/" \
-          " $(lsb_release -cs) main\" " \
-          "> /etc/apt/sources.list.d/postgrespro.list\'"
-    ssh.exec_cmd(ip, cmd)
-    cmd = "wget --quiet -O" \
-          " - http://repo.postgrespro.ru/pgproee-9.6-beta/keys/GPG-KEY-POSTGRESPRO-95" \
-          " |  apt-key add -"
-    ssh.exec_cmd(ip, cmd)
-    cmd = "apt-get update"
-    return ssh.exec_cmd(ip, cmd)
-
-
-def add_centos_repos(ip):
-    ssh = SSHManager()
-    cmd = "rpm -ivh " \
-          "http://repo.postgrespro.ru/pgproee-9.6-beta/keys/postgrespro-9.6.centos96.noarch.rpm"
-    ssh.exec_cmd(ip, cmd)
-    cmd = "yum update"
-    return ssh.exec_interactive_command(ip, cmd, 'y')
-
-
-def install_deb(ip):
-    """Install PostgresproEE on Debian, Ubuntu, Astra Linux
-    :param ip:
-    :return:
-    """
-    ssh = SSHManager()
-    cmd = "apt-get install postgrespro-9.6"
-    return ssh.exec_interactive_command(ip, cmd, 'y')
-
-
-def install_rpm(ip):
-    """Install PostgresproEE CentOS, Oracle, ROSA
-
-    :param ip:
-    :return:
-    """
-    ssh = SSHManager()
-    cmd = "yum install postgrespro96-server"
-    return ssh.exec_interactive_command(ip, cmd, 'y')
-
-
+def uuid_to_string(uuid):
+    return "-".join(["%02x" * 4, "%02x" * 2, "%02x" * 2, "%02x" * 2,
+                     "%02x" * 6]) % tuple(uuid)

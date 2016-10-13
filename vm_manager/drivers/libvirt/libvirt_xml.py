@@ -3,6 +3,8 @@ from xml.dom import minidom
 from xml.etree import ElementTree as ET
 from vm_manager.templates.qcow2_templates import template
 from vm_manager.helpers.utils import mac_address_generator as mac_gen
+from vm_manager.helpers.utils import uuid_generator as uuid_gen
+
 
 
 class LibvirtXmlManager(object):
@@ -25,6 +27,9 @@ class LibvirtXmlManager(object):
         root = self.root
         #Change mac in template
         root.find(".//mac").attrib['address'] = mac_gen()
+
+        # Change uuid in template
+        root.find(".//uuid").text = uuid_gen()
 
         #Change vm_name in template
         root.find('.//name').text = vm_name.rstrip('.qcow2')

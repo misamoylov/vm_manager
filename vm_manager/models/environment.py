@@ -24,7 +24,6 @@ class Environment(object):
         else:
             self.images_working_directory = images_working_directory
 
-
     def get_image_name(self, full_image_name):
         return full_image_name.rstrip('.qcow2')
 
@@ -124,6 +123,12 @@ class Environment(object):
 
         config = self.create_vm_config_standalone_vm(image)
         self.conn.createXML(config)
+        return config
+
+    def define_vm(self, image):
+
+        config = self.create_vm_config_standalone_vm(image)
+        self.conn.defineXML()
         return config
 
     def get_ip_by_mac(self, mac):

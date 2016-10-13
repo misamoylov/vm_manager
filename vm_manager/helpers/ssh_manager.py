@@ -1,6 +1,7 @@
 # coding=utf-8
 import paramiko
 
+
 class SSHManager(object):
     def __init__(self):
         self.client = paramiko.SSHClient()
