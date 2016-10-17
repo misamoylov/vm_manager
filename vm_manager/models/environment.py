@@ -1,5 +1,6 @@
 import libvirt
 import os
+import random
 import shutil
 import subprocess
 from xml.dom import minidom
@@ -74,12 +75,21 @@ class Environment(object):
             with open(self.images_path + image) as f:
                 pass
         except IOError as e:
-            print("Error: Image file {} not found.".format(self.images_path + image))
+            print("Error: Image file {} not found.".format(self.images_path + image), e)
 
         new_image = "{}{}".format(self.images_working_directory, image)
-        shutil.copy(self.images_path + image, new_image)
-        config = self.xml_manager.build_domain_xml(vm_name="{}".format(image),
-                                                   source_image=new_image)
+        try:
+            shutil.copy(self.images_path + image, new_image)
+            config = self.xml_manager.build_domain_xml(vm_name="{}".format(image),
+                                                       source_image=new_image)
+        except IOError as e:
+            print("Your are already has vm with with image {}. Creating new image file".format(
+                image), e)
+            rand = random.randint(1, 100)
+            new_image = "{}{}-{}".format(self.images_working_directory, rand, image)
+            shutil.copy(self.images_path + image, new_image)
+            config = self.xml_manager.build_domain_xml(vm_name="{}-{}".format(rand, image),
+                                                       source_image=new_image)
         return config
 
     def get_vm_name_from_config(self, vm_config):
@@ -99,7 +109,7 @@ class Environment(object):
             with open(self.images_path + image) as f:
                 pass
         except IOError as e:
-            print("Error: Image file {} not found.".format(self.images_path + image))
+            print("Error: Image file {} not found.".format(self.images_path + image), e)
 
         configs = []
         for node in (range(1, vm_count+1)):

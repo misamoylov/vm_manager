@@ -1,5 +1,4 @@
 # coding=utf-8
-
 template = """<domain type='kvm'>
   <name>default</name>
   <uuid>f5b8c05b-9c7a-3211-49b9-2bd635f7e2aa</uuid>
